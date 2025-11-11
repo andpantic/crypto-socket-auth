@@ -3,6 +3,7 @@ package common;
 import system.CryptoService;
 import system.asymmetric.RSACryptoService;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -76,6 +77,7 @@ public abstract class AuthenticationServer {
 
             System.out.println("[AUTH] Waiting for login request...");
             Message loginRequest = receiveMessage(socket);
+            if (loginRequest == null) return;
 
             byte[] decryptedData = cryptoService.decrypt(loginRequest.getEncryptedData());
             String credentials = new String(decryptedData, StandardCharsets.UTF_8);
@@ -115,6 +117,8 @@ public abstract class AuthenticationServer {
 
             System.out.println("=======================================");
 
+        } catch (EOFException e) {
+            System.out.println("[COMMUNICATION] Client closed the connection without sending a message.");
         } catch (Exception e) {
             System.err.println("Error authenticating client: " + e.getMessage());
             e.printStackTrace();
